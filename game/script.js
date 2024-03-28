@@ -1,4 +1,5 @@
-import { HandLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
+import {HandLandmarker, FilesetResolver} from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
+
 const demosSection = document.getElementById("demos");
 let handLandmarker = undefined;
 let runningMode = "IMAGE";
@@ -25,16 +26,19 @@ const video = document.getElementById("webcam");
 const canvasElement = document.getElementById("output_canvas");
 const canvasCtx = canvasElement.getContext("2d");
 // Check if webcam access is supported.
-const hasGetUserMedia = () => { var _a; return !!((_a = navigator.mediaDevices) === null || _a === void 0 ? void 0 : _a.getUserMedia); };
+const hasGetUserMedia = () => {
+    let _a;
+    return !!((_a = navigator.mediaDevices) === null || _a === void 0 ? void 0 : _a.getUserMedia);
+};
 // If webcam supported, add event listener to button for when user
 // wants to activate it.
 if (hasGetUserMedia()) {
     enableWebcamButton = document.getElementById("webcamButton");
     enableWebcamButton.addEventListener("click", enableCam);
-}
-else {
+} else {
     console.warn("getUserMedia() is not supported by your browser");
 }
+
 // Enable the live webcam view and start detection.
 function enableCam(event) {
     if (!handLandmarker) {
@@ -44,8 +48,7 @@ function enableCam(event) {
     if (webcamRunning === true) {
         webcamRunning = false;
         enableWebcamButton.innerText = "Start Scannen";
-    }
-    else {
+    } else {
         webcamRunning = true;
         enableWebcamButton.innerText = "Stop Scannen";
     }
@@ -59,6 +62,7 @@ function enableCam(event) {
         video.addEventListener("loadeddata", predictWebcam);
     });
 }
+
 let lastVideoTime = -1;
 let results = undefined;
 console.log(video);
@@ -72,7 +76,7 @@ async function predictWebcam() {
     // Now let's start detecting the stream.
     if (runningMode === "IMAGE") {
         runningMode = "VIDEO";
-        await handLandmarker.setOptions({ runningMode: "VIDEO" });
+        await handLandmarker.setOptions({runningMode: "VIDEO"});
     }
     let startTimeMs = performance.now();
     if (lastVideoTime !== video.currentTime) {
@@ -84,10 +88,10 @@ async function predictWebcam() {
     if (results.landmarks) {
         for (const landmarks of results.landmarks) {
             drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {
-                color: "#0049ff",
-                lineWidth: 5
+                color: "#01ffff",
+                lineWidth: 1
             });
-            drawLandmarks(canvasCtx, landmarks, { color: "#ff8000", lineWidth: 2 });
+            drawLandmarks(canvasCtx, landmarks, {color: "#00c5ff", lineWidth: 1});
         }
     }
     canvasCtx.restore();
