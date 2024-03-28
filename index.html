@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Hand Detection</title>
+  <link rel="stylesheet" href="./style.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/vision_bundle.js"
+          crossorigin="anonymous"></script>
+  <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+</head>
+<body>
+
+<main>
+  <section id="demos" class="invisible">
+    <div id="liveView" class="videoView">
+      <button id="webcamButton" class="button">
+        Start Game
+      </button>
+      <div style="position: relative;">
+        <video id="webcam" style="position: absolute" autoplay playsinline></video>
+        <canvas class="output_canvas" id="output_canvas"></canvas>
+      </div>
+    </div>
+  </section>
+<!-- partial -->
+  <script type="module" src="./script.js"></script>
+
+</main>
+</body>
+</html>
