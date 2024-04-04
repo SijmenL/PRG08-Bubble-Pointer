@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
             crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
 
 </head>
 <body>
@@ -22,6 +23,21 @@
             <button id="webcamButton" class="button">
                 Start Game
             </button>
+            <button id="trainingButton" class="button">
+                Start Training
+            </button>
+            <label for="label"></label>
+            <input id="label" placeholder="Pose naam">
+            <button id="importData" class="button">
+                Import trained Data & start training
+            </button>
+            <button id="predictPose" class="button">
+                Predict Pose
+            </button>
+            <button id="saveModel" class="button">
+                Save Model
+            </button>
+            <div id="predictions"></div>
             <div>
                 <video id="webcam" autoplay playsinline></video>
                 <canvas width="100%" height="100%" class="output_canvas" id="output_canvas"></canvas>
