@@ -29,7 +29,31 @@ let video = document.getElementById("webcam");
 let canvasElement = document.getElementById("output_canvas");
 let canvasCtx = canvasElement.getContext("2d");
 
-const nn = ml5.neuralNetwork({task: 'classification', debug: true})
+const nn = ml5.neuralNetwork({
+    task: 'classification',
+    debug: true,
+    layers: [
+        {
+            type: 'dense',
+            units: 200,
+            activation: 'relu',
+        },
+        {
+            type: 'dense',
+            units: 150,
+            activation: 'relu',
+        },
+        {
+            type: 'dense',
+            units: 100,
+            activation: 'relu',
+        },
+        {
+            type: 'dense',
+            activation: 'softmax',
+        },
+    ]
+})
 
 function init() {
     createHandLandmarker();
@@ -208,7 +232,7 @@ async function fetchData() {
 function startTrainingNN() {
     nn.normalizeData()
 
-    nn.train({epochs: 20}, () => finishedTraining())
+    nn.train({epochs: 30}, () => finishedTraining())
 }
 
 async function finishedTraining() {

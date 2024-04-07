@@ -1,0 +1,19 @@
+/* Apply basic styling to the table */
+table {
+    width: 100%; /* Set table width to 100% of its container */
+    border-collapse: collapse; /* Collapse border spacing */
+    border: 1px solid #ccc; /* Add a border around the table */
+}
+
+/* Apply styling to table header (optional) */
+th {
+    background-color: #f2f2f2; /* Set background color for header */
+    border: 1px solid #ccc; /* Add border around header cells */
+    padding: 8px; /* Add padding to header cells */
+}
+
+/* Apply styling to table cells */
+td {
+    border: 1px solid #ccc; /* Add border around cells */
+    padding: 8px; /* Add padding to cells */
+}
