@@ -5,7 +5,11 @@ document.addEventListener('DOMContentLoaded', init);
 let handLandmarker = undefined;
 let runningMode = "IMAGE";
 let enableWebcamButton;
+let enableWebcamButtonEndscreen;
 let webcamRunning = false;
+
+let endScreen = document.getElementById('endScreen');
+let probabilityDisplay = document.getElementById('probabilityDisplay')
 
 let canvasWidth;
 let canvasHeight;
@@ -14,11 +18,22 @@ let lastVideoTime = -1;
 let results = undefined;
 let pose;
 let sortedResults;
+let gameStarted = false;
+
+let info = document.getElementById('info')
+let pointsDisplay = document.getElementById('points')
+let timeDisplay = document.getElementById('timer')
+
+let points = 0;
+let totalTime = 45
+let time = totalTime;
 
 let lastCircleSpawnTime = performance.now();
 const circleSpawnInterval = 1000;
 
 let networkPredictions = document.getElementById('predictions')
+
+let menu = document.getElementById('startMenu')
 
 let video = document.getElementById("webcam");
 let canvasElement = document.getElementById("output_canvas");
@@ -28,13 +43,15 @@ const bubbles = [];
 
 const nn = ml5.neuralNetwork({task: 'classification', debug: true})
 const modelDetails = {
-    model: 'model/model.json',
-    metadata: 'model/model_meta.json',
-    weights: 'model/model.weights.bin'
+    model: '../model/model.json',
+    metadata: '../model/model_meta.json',
+    weights: '../model/model.weights.bin'
 }
 
 function init() {
     createHandLandmarker();
+
+    timeDisplay.innerText = time;
 
     const hasGetUserMedia = () => {
         let _a;
@@ -44,6 +61,11 @@ function init() {
     if (hasGetUserMedia()) {
         enableWebcamButton = document.getElementById("webcamButton");
         enableWebcamButton.addEventListener("click", enableCam);
+
+        enableWebcamButtonEndscreen = document.getElementById("webcamButtonEndscreen");
+        enableWebcamButtonEndscreen.addEventListener("click", function () {
+            location.reload();
+        });
     } else {
         console.warn("getUserMedia() is not supported by your browser");
     }
@@ -72,10 +94,6 @@ function enableCam(event) {
         console.log("Wait! objectDetector not loaded yet.");
         return;
     }
-    if (webcamRunning === true) {
-        webcamRunning = false;
-        enableWebcamButton.innerText = "Start Scannen";
-    } else {
 
         if (bubbles.length < 1) {
             for (let i = 0; i < 25; i++) {
@@ -83,8 +101,7 @@ function enableCam(event) {
             }
         }
         webcamRunning = true;
-        enableWebcamButton.innerText = "Stop Scannen";
-    }
+        enableWebcamButton.innerText = "Loading...";
 
     const constraints = {
         video: true
@@ -92,7 +109,13 @@ function enableCam(event) {
 
     navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
         video.srcObject = stream;
-        video.addEventListener("loadeddata", predictWebcam);
+        video.addEventListener("loadeddata", () => {
+            if (!gameStarted) {
+                startGame();
+                gameStarted = true;
+            }
+            predictWebcam();
+        });
     });
 }
 
@@ -106,6 +129,26 @@ function setCanvasSize() {
     // Update canvas width and height variables
     canvasWidth = canvasElement.width;
     canvasHeight = canvasElement.height;
+}
+
+function startGame() {
+    menu.classList.add('fade-out');
+    canvasElement.classList.add('fade-in')
+    info.classList.add('fade-in')
+
+    let timerCountdown = setInterval(() => {
+        time--;
+        timeDisplay.innerText = time;
+
+        if (time < 10) {
+            timeDisplay.style.color = 'red';
+        }
+
+        if (time <= 0) {
+            clearInterval(timerCountdown);
+            stopGame();
+        }
+    }, 1000);
 }
 
 async function predictWebcam() {
@@ -128,16 +171,28 @@ async function predictWebcam() {
             pose = landmarks.flatMap(coord => [coord.x, coord.y, coord.z]);
 
             drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {
-                color: "#01ffff",
+                color: "rgba(255,255,255,0.25)",
                 lineWidth: 1
             });
 
-            drawLandmarks(canvasCtx, landmarks, {color: "#00c5ff", lineWidth: 1});
+            drawLandmarks(canvasCtx, landmarks, {color: "rgba(255,255,255,0.5)", lineWidth: 1});
 
             if (pose !== undefined) {
                 canvasCtx.beginPath();
-                canvasCtx.arc(pose[24] * canvasWidth, pose[25] * canvasHeight, 5, 0, Math.PI * 2);
-                canvasCtx.fillStyle = 'blue';
+                canvasCtx.arc(pose[24] * canvasWidth, pose[25] * canvasHeight, 7, 0, Math.PI * 2);
+                canvasCtx.fillStyle = '#2596be';
+                canvasCtx.fill();
+                canvasCtx.closePath();
+
+                canvasCtx.beginPath();
+                canvasCtx.arc(pose[60] * canvasWidth, pose[61] * canvasHeight, 7, 0, Math.PI * 2);
+                canvasCtx.fillStyle = '#be2525';
+                canvasCtx.fill();
+                canvasCtx.closePath();
+
+                canvasCtx.beginPath();
+                canvasCtx.arc(pose[12] * canvasWidth, pose[13] * canvasHeight, 7, 0, Math.PI * 2);
+                canvasCtx.fillStyle = '#25be2d';
                 canvasCtx.fill();
                 canvasCtx.closePath();
             }
@@ -163,13 +218,75 @@ async function predictWebcam() {
                     circle.dy = -circle.dy; // Reverse vertical velocity
                 }
 
-                const distanceToPose = Math.sqrt((circle.x - pose[24] * canvasWidth) ** 2 + (circle.y - pose[25] * canvasHeight) ** 2);
-                if (distanceToPose <= circle.radius && sortedResults[0].label === 'pointing') {
-                    if (circle.color !== '#2596be') {
-                        console.log("player died");
-                        stopGame();
-                    } else {
-                        bubbles.splice(index, 1);
+                if (sortedResults) {
+                    if (sortedResults[0].label === 'index') {
+                        let distanceToPose = Math.sqrt((circle.x - pose[24] * canvasWidth) ** 2 + (circle.y - pose[25] * canvasHeight) ** 2);
+                        if (distanceToPose <= circle.radius) {
+                            if (circle.color === '#2596be') {
+                                points = points + Math.ceil(circle.radius * 2);
+                                bubbles.splice(index, 1);
+                                pointsDisplay.innerText = points;
+
+                                if (points > 0) {
+                                    pointsDisplay.style.color = 'white';
+                                }
+                            } else {
+                                points = points - 75;
+                                bubbles.splice(index, 1);
+                                pointsDisplay.innerText = points;
+
+                                if (points < 0) {
+                                    pointsDisplay.style.color = 'red';
+                                }
+                            }
+                        }
+                    }
+
+                    if (sortedResults[0].label === 'pinky') {
+                        let distanceToPose = Math.sqrt((circle.x - pose[60] * canvasWidth) ** 2 + (circle.y - pose[61] * canvasHeight) ** 2);
+                        if (distanceToPose <= circle.radius) {
+                            if (circle.color === '#be2525') {
+                                points = points + Math.ceil(circle.radius * 2);
+                                bubbles.splice(index, 1);
+                                pointsDisplay.innerText = points;
+
+                                if (points > 0) {
+                                    pointsDisplay.style.color = 'white';
+                                }
+                            } else {
+                                points = points - 75;
+                                bubbles.splice(index, 1);
+                                pointsDisplay.innerText = points;
+
+                                if (points < 0) {
+                                    pointsDisplay.style.color = 'red';
+                                }
+                            }
+                        }
+                    }
+
+                    if (sortedResults[0].label === 'thumb') {
+                        let distanceToPose = Math.sqrt((circle.x - pose[12] * canvasWidth) ** 2 + (circle.y - pose[13] * canvasHeight) ** 2);
+                        if (distanceToPose <= circle.radius) {
+                            if (circle.color === '#25be2d') {
+                                points = points + Math.ceil(circle.radius * 2);
+                                bubbles.splice(index, 1);
+                                pointsDisplay.innerText = points;
+
+                                if (points > 0) {
+                                    pointsDisplay.style.color = 'white';
+                                }
+                            } else {
+                                points = points - 75;
+                                bubbles.splice(index, 1);
+                                pointsDisplay.innerText = points;
+
+                                if (points < 0) {
+                                    pointsDisplay.style.color = 'red';
+                                }
+                            }
+                        }
+
                     }
                 }
             });
@@ -184,6 +301,23 @@ async function predictWebcam() {
                 p.innerText = `${prediction.label}: ${prediction.confidence}`;
                 fragment.appendChild(p);
             });
+
+            if (sortedResults[0].label === 'index') {
+                probabilityDisplay.innerText = '☝️';
+            }
+            if (sortedResults[0].label === 'pinky') {
+                probabilityDisplay.innerHTML = ''
+                let img = document.createElement('img')
+                img.src = 'img/pinky.png';
+                img.classList.add('emoji-img')
+                probabilityDisplay.appendChild(img)
+            }
+            if (sortedResults[0].label === 'thumb') {
+                probabilityDisplay.innerText = '👍';
+            }
+            if (sortedResults[0].label === 'nothing') {
+                probabilityDisplay.innerText = '🚫';
+            }
 
             networkPredictions.innerHTML = '';
             networkPredictions.appendChild(fragment);
@@ -215,6 +349,7 @@ async function predictWebcam() {
     }
 }
 
+
 function createCircle() {
     // Create new circle
     const radius = Math.random() * 20 + 10;
@@ -224,10 +359,15 @@ function createCircle() {
     const dy = (Math.random() - 0.5) * 2;
 
     let circleColor;
-    if (Math.random() < 0.2) {
+    let randomColor = Math.random()
+    if (randomColor < 0.333) {
         circleColor = '#be2525';
-    } else {
+    }
+    if (randomColor > 0.333 && randomColor < 0.666) {
         circleColor = '#2596be';
+    }
+    if (randomColor > 0.666) {
+        circleColor = '#25be2d';
     }
     const color = circleColor
 
@@ -246,5 +386,14 @@ function drawCircle(circle) {
 }
 
 function stopGame() {
+    canvasElement.classList.remove('fade-in')
+    canvasElement.classList.add('fade-out')
+    info.classList.remove('fade-in')
+    info.classList.add('fade-out')
+    endScreen.classList.remove('no-view')
+    endScreen.classList.add('fade-in')
     webcamRunning = false;
+    gameStarted = false;
+
+    document.getElementById('scoreEndscreen').innerText = points
 }

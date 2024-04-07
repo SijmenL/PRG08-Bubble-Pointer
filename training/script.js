@@ -35,17 +35,7 @@ const nn = ml5.neuralNetwork({
     layers: [
         {
             type: 'dense',
-            units: 200,
-            activation: 'relu',
-        },
-        {
-            type: 'dense',
             units: 150,
-            activation: 'relu',
-        },
-        {
-            type: 'dense',
-            units: 100,
             activation: 'relu',
         },
         {
@@ -232,7 +222,13 @@ async function fetchData() {
 function startTrainingNN() {
     nn.normalizeData()
 
-    nn.train({epochs: 30}, () => finishedTraining())
+    const trainingOptions = {
+        epochs: 40,
+        learningRate: 0.1,
+        hiddenUnits: 10,
+    }
+
+    nn.train(trainingOptions, finishedTraining)
 }
 
 async function finishedTraining() {

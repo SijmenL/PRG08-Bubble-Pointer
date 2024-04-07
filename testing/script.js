@@ -23,9 +23,9 @@ let importedTrainingData;
 
 const nn = ml5.neuralNetwork({task: 'classification', debug: true})
 const modelDetails = {
-    model: 'model/model.json',
-    metadata: 'model/model_meta.json',
-    weights: 'model/model.weights.bin'
+    model: '../model/model.json',
+    metadata: '../model/model_meta.json',
+    weights: '../model/model.weights.bin'
 }
 
 function init() {
@@ -77,7 +77,7 @@ async function startTesting() {
 
 async function fetchData() {
     try {
-        const response = await fetch('trainingData.json'); // Fetch pointing.json
+        const response = await fetch('../training/trainingData.json'); // Fetch pointing.json
         if (!response.ok) {
             throw new Error('Failed to fetch data');
         }
@@ -95,6 +95,7 @@ async function fetchData() {
 
 async function fillTable() {
     const uniqueLabels = [...new Set(importedTrainingData.map(data => data.label))];
+    uniqueLabels.sort();
     console.log(uniqueLabels);
 
     table.innerHTML = '';

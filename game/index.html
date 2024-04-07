@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Hand Detection</title>
+    <title>Bubble Pointer</title>
     <link rel="stylesheet" href="style.css">
 
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/vision_bundle.js"
@@ -18,11 +18,68 @@
 
 <main>
     <section id="demos" class="invisible">
-        <div id="liveView" class="videoView">
-            <div class="debug-div">
+
+        <div class="info" id="info">
+            <div>
+                <div id="probabilityDisplay" style="position: absolute; top: 33px; left: 15px">🚫</div>
+            </div>
+            <div style="display: flex; flex-direction: row; gap: 15px">
+                <p id="points">0</p>
+                <p>-</p>
+                <p id="timer"></p>
+            </div>
+            <div>
+                <p></p>
+            </div>
+        </div>
+
+        <div id="endScreen" class="start-div end-screen no-view">
+            <img src="img/logo.png" alt="logo" class="logo">
+            <div class="instructions">
+                <p class="under-title">Your time is up!</p>
+
+                <h2>You scored <span id="scoreEndscreen">0</span> points!</h2>
+
+                <button id="webcamButtonEndscreen" class="button">
+                    Play again
+                </button>
+            </div>
+        </div>
+
+        <div id="startMenu" class="start-div">
+            <img src="img/logo.png" alt="logo" class="logo">
+            <div class="instructions">
+                <p class="under-title">a game about hands and bubbles</p>
+
+                <div class="circle-list">
+                    <div class="circle-text">
+                        <div class="circle red-circle"></div>
+                        <p>Pop the red bubbles with your pinky finger <img class="emoji-img" src="img/pinky.png"
+                                                                           alt="pinky"></p>
+                    </div>
+                    <div class="circle-text">
+                        <div class="circle blue-circle"></div>
+                        <p>Pop the blue bubbles with your pointing finger <span class="emoji">☝️</span></p>
+                    </div>
+                    <div class="circle-text">
+                        <div class="circle green-circle"></div>
+                        <p>Pop the green bubbles with your thumb <span class="emoji">👍</span></p>
+                    </div>
+                </div>
+
+                <p>Popping a bubble with the wrong finger makes you lose 75 points. You earn points by popping the
+                    bubbles, the bigger the bubble, the more points! You have 45 seconds to get as many points as you
+                    can! Good luck!</p>
+
                 <button id="webcamButton" class="button">
                     Start Game
                 </button>
+            </div>
+        </div>
+
+
+        <div id="liveView" class="videoView">
+            <div class="debug-div">
                 <div id="predictions" class="predications"></div>
             </div>
             <div>
